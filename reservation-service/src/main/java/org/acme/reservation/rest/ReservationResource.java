@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.acme.reservation.inventory.Car;
+import org.acme.reservation.inventory.GraphQLInventoryClient;
 import org.acme.reservation.inventory.InventoryClient;
 import org.acme.reservation.rental.Rental;
 import org.acme.reservation.rental.RentalClient;
@@ -16,6 +17,7 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.resteasy.reactive.RestQuery;
 
 import io.quarkus.logging.Log;
+import io.smallrye.graphql.client.GraphQLClient;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -31,7 +33,8 @@ public class ReservationResource {
   private final InventoryClient inventoryClient;
   private final RentalClient rentalClient;
 
-  public ReservationResource(ReservationsRepository reservationsRepository, InventoryClient inventoryClient,
+  public ReservationResource(ReservationsRepository reservationsRepository,
+      @GraphQLClient("inventory") GraphQLInventoryClient inventoryClient,
       @RestClient RentalClient rentalClient) {
     this.reservationsRepository = reservationsRepository;
     this.inventoryClient = inventoryClient;
@@ -39,7 +42,7 @@ public class ReservationResource {
   }
 
   @GET
-  @Path("availablility")
+  @Path("availability")
   public Collection<Car> availability(@RestQuery LocalDate startDay, @RestQuery LocalDate endDate) {
 
     // obtain all cars from inventory
