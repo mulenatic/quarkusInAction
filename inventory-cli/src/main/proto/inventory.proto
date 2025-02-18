@@ -24,6 +24,6 @@ message CarResponse {
 }
 
 service InventoryService {
-  rpc add(stream InsertCarRequest) returns (stream CarResponse) {}
+  rpc add(InsertCarRequest) returns (CarResponse) {}
   rpc remove(RemoveCarRequest) returns (CarResponse) {}
 }
