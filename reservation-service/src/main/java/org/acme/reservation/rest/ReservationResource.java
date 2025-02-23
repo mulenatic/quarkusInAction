@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.acme.reservation.inventory.Car;
 import org.acme.reservation.inventory.GraphQLInventoryClient;
@@ -18,12 +19,14 @@ import org.jboss.resteasy.reactive.RestQuery;
 
 import io.quarkus.logging.Log;
 import io.smallrye.graphql.client.GraphQLClient;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.SecurityContext;
 
 @Path("reservation")
 @Produces(MediaType.APPLICATION_JSON)
@@ -32,6 +35,9 @@ public class ReservationResource {
   private final ReservationsRepository reservationsRepository;
   private final InventoryClient inventoryClient;
   private final RentalClient rentalClient;
+
+  @Inject
+  SecurityContext securityContext;
 
   public ReservationResource(ReservationsRepository reservationsRepository,
       @GraphQLClient("inventory") GraphQLInventoryClient inventoryClient,
@@ -69,6 +75,9 @@ public class ReservationResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @POST
   public Reservation make(Reservation reservation) {
+    reservation.usedId = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName()
+        : "anonymous";
+
     Reservation result = reservationsRepository.save(reservation);
 
     // this is just a dummy value for the time being
@@ -80,6 +89,19 @@ public class ReservationResource {
     }
 
     return result;
+  }
+
+  @GET
+  @Path("all")
+  public Collection<Reservation> allReservations() {
+    String userId = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName()
+        : null;
+
+    return reservationsRepository.findAll()
+        .stream()
+        .filter(reservation -> reservation.usedId.equals(userId) || userId == null)
+        .collect(Collectors.toList());
+
   }
 
 }
