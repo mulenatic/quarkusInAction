@@ -49,7 +49,7 @@ public class ReservationResource {
 
   @GET
   @Path("availability")
-  public Collection<Car> availability(@RestQuery LocalDate startDay, @RestQuery LocalDate endDate) {
+  public Collection<Car> availability(@RestQuery LocalDate startDate, @RestQuery LocalDate endDate) {
 
     // obtain all cars from inventory
     List<Car> availableCars = inventoryClient.allCars();
@@ -63,7 +63,7 @@ public class ReservationResource {
     List<Reservation> reservations = reservationsRepository.findAll();
     // for each reservation, remove the car from the map
     for (Reservation reservation : reservations) {
-      if (reservation.isReserved(startDay, endDate)) {
+      if (reservation.isReserved(startDate, endDate)) {
         carsById.remove(reservation.carId);
       }
     }
