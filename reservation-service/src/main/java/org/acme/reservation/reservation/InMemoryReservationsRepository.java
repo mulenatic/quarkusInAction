@@ -25,4 +25,9 @@ public class InMemoryReservationsRepository implements ReservationsRepository {
     return reservation;
   }
 
+  @Override
+  public void remove(Long reservationId) {
+    store.removeIf(res -> res.id == reservationId);
+  }
+
 }

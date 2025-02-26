@@ -15,12 +15,14 @@ import org.acme.reservation.rental.RentalClient;
 import org.acme.reservation.reservation.Reservation;
 import org.acme.reservation.reservation.ReservationsRepository;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.jboss.resteasy.reactive.RestPath;
 import org.jboss.resteasy.reactive.RestQuery;
 
 import io.quarkus.logging.Log;
 import io.smallrye.graphql.client.GraphQLClient;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -75,7 +77,7 @@ public class ReservationResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @POST
   public Reservation make(Reservation reservation) {
-    reservation.usedId = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName()
+    reservation.userId = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName()
         : "anonymous";
 
     Reservation result = reservationsRepository.save(reservation);
@@ -91,6 +93,13 @@ public class ReservationResource {
     return result;
   }
 
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Path("{id}")
+  @DELETE
+  public void cancel(@RestPath Long reservationId) {
+    reservationsRepository.remove(reservationId);
+  }
+
   @GET
   @Path("all")
   public Collection<Reservation> allReservations() {
@@ -99,9 +108,11 @@ public class ReservationResource {
 
     return reservationsRepository.findAll()
         .stream()
-        .filter(reservation -> reservation.usedId.equals(userId) || userId == null)
+        .filter(reservation -> reservation.userId.equals(userId) || userId == null)
         .collect(Collectors.toList());
 
   }
+
+
 
 }

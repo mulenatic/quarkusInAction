@@ -1,8 +1,6 @@
 package org.acme.reservation;
 
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -15,6 +13,7 @@ import org.acme.reservation.rest.ReservationResource;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import io.quarkus.logging.Log;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.DisabledOnIntegrationTest;
@@ -22,6 +21,7 @@ import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 
 @QuarkusTest
 public class ReservationRepositoryTest {
@@ -34,22 +34,62 @@ public class ReservationRepositoryTest {
   @TestHTTPResource("availability")
   URL availability;
 
+  @TestHTTPEndpoint(ReservationResource.class)
+  @TestHTTPResource("{id}")
+  String remove;
+
+  @TestHTTPEndpoint(ReservationResource.class)
+  @TestHTTPResource("all")
+  URL all;
+
   @Test
   public void testReservationIds() {
+    createReservationAndAssureIdGiven();
+  }
+
+  private Reservation createReservationAndAssureIdGiven() {
     Reservation reservation = new Reservation();
     reservation.startDay = LocalDate.now().plusDays(5);
     reservation.endDay = LocalDate.now().plusDays(12);
     reservation.carId = 384L;
 
-    RestAssured
+    Response response = RestAssured
         .given()
         .contentType(ContentType.JSON)
         .body(reservation)
         .when()
-        .post(reservationResource)
+        .post(reservationResource);
+
+    response
         .then()
         .statusCode(200)
         .body("id", notNullValue());
+
+    return response.as(Reservation.class);
+  }
+
+  @Test
+  public void testRemoveReservation() {
+    Reservation reservation = createReservationAndAssureIdGiven();
+    Reservation reservationToRemove = createReservationAndAssureIdGiven();
+
+    RestAssured
+        .given()
+        .when()
+        .delete(remove, reservationToRemove.id)
+        .then()
+        .statusCode(204);
+
+    RestAssured
+        .given()
+        .when()
+        .get(all)
+        .then()
+        .statusCode(200)
+        .body("$", not(empty()))
+        .body("size()", greaterThan(0))
+        .body("[0].id", equalTo(reservation.id.intValue()));
+
   }
 
   @DisabledOnIntegrationTest(forArtifactTypes = DisabledOnIntegrationTest.ArtifactType.NATIVE_BINARY)
@@ -65,7 +105,7 @@ public class ReservationRepositoryTest {
     String endDate = "2022-01-10";
     // List aailable cars for our requested timeslot and choose one
     Car[] cars = RestAssured.given()
-        .queryParam("startDay", startDate)
+        .queryParam("startDate", startDate)
         .queryParam("endDate", endDate)
         .when().get(availability)
         .then().statusCode(200)
@@ -88,7 +128,7 @@ public class ReservationRepositoryTest {
 
     // Verify that this car doesn't show as available anymore
     RestAssured.given()
-        .queryParam("startDay", startDate)
+        .queryParam("startDate", startDate)
         .queryParam("endDate", endDate)
         .when().get(availability)
         .then().statusCode(200)

@@ -8,7 +8,7 @@ public class Reservation {
   public Long carId;
   public LocalDate startDay;
   public LocalDate endDay;
-  public String usedId;
+  public String userId;
 
   public boolean isReserved(LocalDate startDay, LocalDate endDay) {
     return (!this.endDay.isBefore(startDay) || this.startDay.isAfter(endDay));
