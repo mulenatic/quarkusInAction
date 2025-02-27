@@ -93,8 +93,7 @@ public class ReservationResource {
     return result;
   }
 
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Path("{id}")
+  @Path("{reservationId}")
   @DELETE
   public void cancel(@RestPath Long reservationId) {
     reservationsRepository.remove(reservationId);

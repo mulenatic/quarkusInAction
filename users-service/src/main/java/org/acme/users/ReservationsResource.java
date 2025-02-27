@@ -7,12 +7,15 @@ import org.acme.users.model.Car;
 import org.acme.users.model.Reservation;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.resteasy.reactive.RestForm;
+import org.jboss.resteasy.reactive.RestPath;
 import org.jboss.resteasy.reactive.RestQuery;
 import org.jboss.resteasy.reactive.RestResponse;
 
+import io.quarkus.logging.Log;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -93,6 +96,20 @@ public class ReservationsResource {
         .ok(getResevations())
         .header("HX-Trigger-After-Swap", "update-available-cars-list")
         .build();
+  }
+
+  @DELETE
+  @Produces(MediaType.TEXT_HTML)
+  @Path("/cancel/{reservationId}")
+  public RestResponse<TemplateInstance> cancel(@RestPath Long reservationId) {
+
+    client.cancel(reservationId);
+
+    return RestResponse.ResponseBuilder
+        .ok(getResevations())
+        .header("HX-Trigger-After-Swap", "update-available-cars-list")
+        .build();
+
   }
 
 }
