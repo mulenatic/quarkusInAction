@@ -1,25 +1,33 @@
 package org.acme.rental;
 
-import java.time.LocalDate;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.List;
 
-import io.quarkus.logging.Log;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
 @Path("/rental")
+@Produces(MediaType.APPLICATION_JSON)
 public class RentalResource {
 
-  private final AtomicLong id = new AtomicLong();
+  private final RentalsRepository rentalsRepository;
 
-  @Path("/start/{userid}/{reservationId}")
+  public RentalResource(RentalsRepository rentalsRepository) {
+    this.rentalsRepository = rentalsRepository;
+  }
+
+  @Path("/start/{userId}/{reservationId}")
   @POST
   @Produces(MediaType.APPLICATION_JSON)
   public Rental start(String userId, Long reservationId) {
-    Log.infof("Starting rental for %s with reservation %s", userId, reservationId);
-    return new Rental(id.incrementAndGet(), userId, reservationId, LocalDate.now());
+    return rentalsRepository.create(userId, reservationId);
+  }
+
+  @GET
+  public List<Rental> getAll() {
+    return rentalsRepository.getAll();
   }
 
 }
