@@ -1,9 +1,14 @@
 package org.acme.users;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.acme.users.model.Car;
+import org.acme.users.model.Rental;
 import org.acme.users.model.Reservation;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.resteasy.reactive.RestForm;
@@ -40,6 +45,9 @@ public class ReservationsResource {
         Collection<Car> cars,
         LocalDate startDate,
         LocalDate endDate);
+
+    public static native TemplateInstance listofrentals(
+        Collection<Rental> rentals);
   }
 
   @Inject
@@ -47,6 +55,9 @@ public class ReservationsResource {
 
   @RestClient
   ReservationsClient client;
+
+  @RestClient
+  RentalsClient rentalsClient;
 
   @GET
   @Produces(MediaType.TEXT_HTML)
@@ -110,6 +121,14 @@ public class ReservationsResource {
         .header("HX-Trigger-After-Swap", "update-available-cars-list")
         .build();
 
+  }
+
+  @GET
+  @Produces(MediaType.TEXT_HTML)
+  @Path("/rentals")
+  public TemplateInstance rentalsTable() {
+    Collection<Rental> rentals = rentalsClient.getAll();
+    return Templates.listofrentals(rentals);
   }
 
 }

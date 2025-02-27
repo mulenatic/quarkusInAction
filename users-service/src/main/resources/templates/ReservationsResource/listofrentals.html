@@ -1,0 +1,20 @@
+{@org.acme.users.model.Rental[] rentals}
+
+<table>
+  <thead>
+    <tr>
+      <th>id</th>
+      <th>User ID</th>
+      <th>Reservation ID</th>
+      <th>Start date</th>
+    </tr>
+  </thead>
+  {#for rental in rentals}
+  <tr>
+    <td>{rental.id}</td>
+    <td>{rental.userId}</td>
+    <td>{rental.reservationId}</td>
+    <td>{rental.startDate}</td>
+  </tr>
+  {/for}
+</table>
