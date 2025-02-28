@@ -93,7 +93,8 @@ public class ReservationResourceTest {
         .then()
         .statusCode(200)
         .body("$", not(empty()))
-        .body("size()", greaterThan(0));
+        .body("size()", greaterThan(0))
+        .body("[0].id", equalTo(reservation.id.intValue()));
 
   }
 

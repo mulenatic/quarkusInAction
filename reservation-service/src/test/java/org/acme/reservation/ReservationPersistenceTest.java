@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.logging.Log;
+import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.transaction.Transactional;
 
@@ -23,7 +24,7 @@ public class ReservationPersistenceTest {
   }
 
   @Test
-  @Transactional
+  @TestTransaction
   public void testCreateReservation() {
     Reservation reservation = createReservation();
 
@@ -35,7 +36,7 @@ public class ReservationPersistenceTest {
   }
 
   @Test
-  @Transactional
+  @TestTransaction
   public void testRemoveReservation() {
 
     Reservation reservation = createReservation();
