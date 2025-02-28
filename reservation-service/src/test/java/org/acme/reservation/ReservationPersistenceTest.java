@@ -13,20 +13,35 @@ import jakarta.transaction.Transactional;
 @QuarkusTest
 public class ReservationPersistenceTest {
 
-  @Test
-  @Transactional
-  public void testCreateReservation() {
+  private static Reservation createReservation() {
     Reservation reservation = new Reservation();
     reservation.startDay = LocalDate.now().plusDays(5);
     reservation.endDay = LocalDate.now().plusDays(7);
     reservation.carId = 238L;
     reservation.persist();
+    return reservation;
+  }
+
+  @Test
+  @Transactional
+  public void testCreateReservation() {
+    Reservation reservation = createReservation();
 
     Assertions.assertNotNull(reservation.id);
     Assertions.assertEquals(1, Reservation.count());
     Reservation persistedReservation = Reservation.findById(reservation.id);
     Assertions.assertNotNull(persistedReservation);
     Assertions.assertEquals(reservation.carId, persistedReservation.carId);
+  }
+
+  @Test
+  @Transactional
+  public void testRemoveReservation() {
+
+    Reservation reservation = createReservation();
+
+    Reservation.deleteById(reservation.id);
+
   }
 
 }

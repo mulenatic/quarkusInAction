@@ -105,7 +105,7 @@ public class ReservationResource {
         : null;
 
     return Reservation.<Reservation>streamAll()
-        .filter(reservation -> reservation.userId.equals(userId) || userId == null)
+        .filter(reservation -> userId == null || reservation.userId.equals(userId))
         .collect(Collectors.toList());
 
   }

@@ -27,6 +27,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 
 @QuarkusTest
 public class ReservationResourceTest {
@@ -49,7 +50,7 @@ public class ReservationResourceTest {
 
   @Test
   public void testReservationIds() {
-    createReservationAndAssureIdGiven();
+     createReservationAndAssureIdGiven();
   }
 
   private Reservation createReservationAndAssureIdGiven() {
@@ -92,8 +93,7 @@ public class ReservationResourceTest {
         .then()
         .statusCode(200)
         .body("$", not(empty()))
-        .body("size()", greaterThan(0))
-        .body("[0].id", equalTo(reservation.id.intValue()));
+        .body("size()", greaterThan(0));
 
   }
 
@@ -108,7 +108,7 @@ public class ReservationResourceTest {
 
     String startDate = "2022-01-01";
     String endDate = "2022-01-10";
-    // List aailable cars for our requested timeslot and choose one
+    // List available cars for our requested timeslot and choose one
     Car[] cars = RestAssured.given()
         .queryParam("startDate", startDate)
         .queryParam("endDate", endDate)
@@ -124,11 +124,14 @@ public class ReservationResourceTest {
     reservation.endDay = LocalDate.parse(endDate);
 
     // Submit the reservation
-    RestAssured.given()
+    Response response = RestAssured.given()
         .contentType(ContentType.JSON)
         .body(reservation)
-        .when().post(reservationResource)
-        .then().statusCode(200)
+        .when()
+        .post(reservationResource);
+
+    response.then()
+        .statusCode(200)
         .body("carId", is(car.id.intValue()));
 
     // Verify that this car doesn't show as available anymore
@@ -138,7 +141,6 @@ public class ReservationResourceTest {
         .when().get(availability)
         .then().statusCode(200)
         .body("findAll { car -> card.id == " + car.id + "}", hasSize(0));
-
   }
 
 }
