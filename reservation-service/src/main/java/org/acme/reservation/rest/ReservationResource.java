@@ -7,12 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.acme.reservation.entity.Reservation;
 import org.acme.reservation.inventory.Car;
 import org.acme.reservation.inventory.GraphQLInventoryClient;
 import org.acme.reservation.inventory.InventoryClient;
 import org.acme.reservation.rental.Rental;
 import org.acme.reservation.rental.RentalClient;
-import org.acme.reservation.reservation.Reservation;
 import org.acme.reservation.reservation.ReservationsRepository;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.resteasy.reactive.RestPath;
@@ -21,6 +21,7 @@ import org.jboss.resteasy.reactive.RestQuery;
 import io.quarkus.logging.Log;
 import io.smallrye.graphql.client.GraphQLClient;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -34,17 +35,14 @@ import jakarta.ws.rs.core.SecurityContext;
 @Produces(MediaType.APPLICATION_JSON)
 public class ReservationResource {
 
-  private final ReservationsRepository reservationsRepository;
   private final InventoryClient inventoryClient;
   private final RentalClient rentalClient;
 
   @Inject
   SecurityContext securityContext;
 
-  public ReservationResource(ReservationsRepository reservationsRepository,
-      @GraphQLClient("inventory") GraphQLInventoryClient inventoryClient,
+  public ReservationResource(@GraphQLClient("inventory") GraphQLInventoryClient inventoryClient,
       @RestClient RentalClient rentalClient) {
-    this.reservationsRepository = reservationsRepository;
     this.inventoryClient = inventoryClient;
     this.rentalClient = rentalClient;
   }
@@ -62,7 +60,7 @@ public class ReservationResource {
     }
 
     // get all current reservations
-    List<Reservation> reservations = reservationsRepository.findAll();
+    List<Reservation> reservations = Reservation.listAll();
     // for each reservation, remove the car from the map
     for (Reservation reservation : reservations) {
       if (reservation.isReserved(startDate, endDate)) {
@@ -76,27 +74,29 @@ public class ReservationResource {
 
   @Consumes(MediaType.APPLICATION_JSON)
   @POST
+  @Transactional
   public Reservation make(Reservation reservation) {
     reservation.userId = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName()
         : "anonymous";
 
-    Reservation result = reservationsRepository.save(reservation);
+    reservation.persist();
 
     // this is just a dummy value for the time being
     String userId = "x";
 
     if (reservation.startDay.equals(LocalDate.now())) {
-      Rental rental = rentalClient.start(userId, result.id);
+      Rental rental = rentalClient.start(userId, reservation.id);
       Log.info("Successfully started rental " + rental);
     }
 
-    return result;
+    return reservation;
   }
 
   @Path("{reservationId}")
   @DELETE
+  @Transactional
   public void cancel(@RestPath Long reservationId) {
-    reservationsRepository.remove(reservationId);
+    Reservation.deleteById(reservationId);
   }
 
   @GET
@@ -105,13 +105,10 @@ public class ReservationResource {
     String userId = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName()
         : null;
 
-    return reservationsRepository.findAll()
-        .stream()
+    return Reservation.<Reservation>streamAll()
         .filter(reservation -> reservation.userId.equals(userId) || userId == null)
         .collect(Collectors.toList());
 
   }
-
-
 
 }

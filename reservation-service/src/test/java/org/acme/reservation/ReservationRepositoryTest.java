@@ -6,9 +6,9 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.util.Collections;
 
+import org.acme.reservation.entity.Reservation;
 import org.acme.reservation.inventory.Car;
 import org.acme.reservation.inventory.GraphQLInventoryClient;
-import org.acme.reservation.reservation.Reservation;
 import org.acme.reservation.rest.ReservationResource;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
