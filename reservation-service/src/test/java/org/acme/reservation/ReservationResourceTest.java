@@ -1,6 +1,12 @@
 package org.acme.reservation;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -13,7 +19,6 @@ import org.acme.reservation.rest.ReservationResource;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import io.quarkus.logging.Log;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.DisabledOnIntegrationTest;
@@ -24,7 +29,7 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
 @QuarkusTest
-public class ReservationRepositoryTest {
+public class ReservationResourceTest {
 
   @TestHTTPEndpoint(ReservationResource.class)
   @TestHTTPResource
