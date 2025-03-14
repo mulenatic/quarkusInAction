@@ -17,8 +17,10 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.resteasy.reactive.RestPath;
 import org.jboss.resteasy.reactive.RestQuery;
 
+import io.quarkus.hibernate.reactive.panache.common.WithTransaction;
 import io.quarkus.logging.Log;
 import io.smallrye.graphql.client.GraphQLClient;
+import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
@@ -73,22 +75,26 @@ public class ReservationResource {
 
   @Consumes(MediaType.APPLICATION_JSON)
   @POST
-  @Transactional
-  public Reservation make(Reservation reservation) {
+  @WithTransaction
+  public Uni<Reservation> make(Reservation reservation) {
     reservation.userId = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName()
         : "anonymous";
 
-    reservation.persist();
+    return reservation.<Reservation>persist()
+        .onItem()
+        .call(persistedRerservation -> {
+          Log.info("Successfully reserved reservation " + persistedRerservation);
 
-    // this is just a dummy value for the time being
-    String userId = "x";
+          if (persistedRerservation.startDay.equals(LocalDate.now())) {
+            rentalClient
+                .start(persistedRerservation.userId, persistedRerservation.id)
+                .onItem().invoke(rental -> Log.info("Successfully started rental " + rental))
+                .replaceWith(persistedRerservation);
+          }
 
-    if (reservation.startDay.equals(LocalDate.now())) {
-      Rental rental = rentalClient.start(userId, reservation.id);
-      Log.info("Successfully started rental " + rental);
-    }
+          return Uni.createFrom().item(persistedRerservation);
+        });
 
-    return reservation;
   }
 
   @Path("{reservationId}")
@@ -100,13 +106,16 @@ public class ReservationResource {
 
   @GET
   @Path("all")
-  public Collection<Reservation> allReservations() {
+  public Uni<Collection<Reservation>> allReservations() {
     String userId = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName()
         : null;
 
-    return Reservation.<Reservation>streamAll()
-        .filter(reservation -> userId == null || reservation.userId.equals(userId))
-        .collect(Collectors.toList());
+    return null;
+    /*
+     * return Reservation.<Reservation>listAll()
+     * .filter(reservation -> userId == null || reservation.userId.equals(userId))
+     * .collect(Collectors.toList());
+     */
 
   }
 
