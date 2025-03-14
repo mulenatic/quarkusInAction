@@ -6,10 +6,9 @@ import org.acme.reservation.entity.Reservation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.logging.Log;
-import io.quarkus.test.TestTransaction;
+import io.quarkus.test.TestReactiveTransaction;
 import io.quarkus.test.junit.QuarkusTest;
-import jakarta.transaction.Transactional;
+import io.quarkus.test.vertx.UniAsserter;
 
 @QuarkusTest
 public class ReservationPersistenceTest {
@@ -19,29 +18,47 @@ public class ReservationPersistenceTest {
     reservation.startDay = LocalDate.now().plusDays(5);
     reservation.endDay = LocalDate.now().plusDays(7);
     reservation.carId = 238L;
-    reservation.persist();
     return reservation;
   }
 
   @Test
-  @TestTransaction
-  public void testCreateReservation() {
+  @TestReactiveTransaction
+  public void testCreateReservation(UniAsserter asserter) {
     Reservation reservation = createReservation();
 
-    Assertions.assertNotNull(reservation.id);
-    Assertions.assertEquals(1, Reservation.count());
-    Reservation persistedReservation = Reservation.findById(reservation.id);
-    Assertions.assertNotNull(persistedReservation);
-    Assertions.assertEquals(reservation.carId, persistedReservation.carId);
+    asserter.<Reservation>assertThat(() -> reservation.persist(),
+        r -> {
+          Assertions.assertNotNull(r.id);
+          asserter.putData("reservation.id", r.id);
+        });
+
+    asserter.assertEquals(() -> Reservation.count(), 1L);
+    asserter.assertThat(
+        () -> Reservation.<Reservation>findById(asserter.getData("reservation.id")),
+        persistedRerservation -> {
+          Assertions.assertNotNull(persistedRerservation);
+          Assertions.assertEquals(reservation.carId, persistedRerservation.carId);
+        });
+
   }
 
   @Test
-  @TestTransaction
-  public void testRemoveReservation() {
+  @TestReactiveTransaction
+  public void testRemoveReservation(UniAsserter asserter) {
 
     Reservation reservation = createReservation();
 
-    Reservation.deleteById(reservation.id);
+    asserter.<Reservation>assertThat(() -> reservation.persist(),
+        r -> {
+          Assertions.assertNotNull(r.id);
+          asserter.putData("reservation.id", r.id);
+        });
+
+    asserter.<Boolean>assertThat(
+        () -> Reservation.deleteById(reservation.id),
+        result -> {
+          Assertions.assertTrue(result);
+        });
 
   }
 

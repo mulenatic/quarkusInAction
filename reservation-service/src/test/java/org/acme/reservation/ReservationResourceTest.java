@@ -28,6 +28,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
+import io.smallrye.mutiny.Uni;
 
 @QuarkusTest
 public class ReservationResourceTest {
@@ -104,7 +105,7 @@ public class ReservationResourceTest {
     GraphQLInventoryClient mock = Mockito.mock(GraphQLInventoryClient.class);
     Car peugeot = new Car(1L, "ABC123", "Peugeot", "3006");
     Mockito.when(mock.allCars())
-        .thenReturn(Collections.singletonList(peugeot));
+        .thenReturn(Uni.createFrom().item(Collections.singletonList(peugeot)));
     QuarkusMock.installMockForType(mock, GraphQLInventoryClient.class);
 
     String startDate = "2022-01-01";

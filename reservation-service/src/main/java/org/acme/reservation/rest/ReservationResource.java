@@ -14,6 +14,7 @@ import org.acme.reservation.inventory.InventoryClient;
 import org.acme.reservation.rental.Rental;
 import org.acme.reservation.rental.RentalClient;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.jboss.resteasy.reactive.ResponseStatus;
 import org.jboss.resteasy.reactive.RestPath;
 import org.jboss.resteasy.reactive.RestQuery;
 
@@ -104,9 +105,10 @@ public class ReservationResource {
 
   @Path("{reservationId}")
   @DELETE
-  @Transactional
-  public void cancel(@RestPath Long reservationId) {
-    Reservation.deleteById(reservationId);
+  @WithTransaction
+  public Uni<Void> cancel(@RestPath Long reservationId) {
+     Reservation.deleteById(reservationId);
+     return Uni.createFrom().voidItem();
   }
 
   @GET
