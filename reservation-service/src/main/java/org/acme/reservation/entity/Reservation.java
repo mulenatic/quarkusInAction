@@ -3,7 +3,8 @@ package org.acme.reservation.entity;
 import java.time.LocalDate;
 import java.util.List;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.hibernate.reactive.panache.PanacheEntity;
+import io.smallrye.mutiny.Uni;
 import jakarta.persistence.Entity;
 
 @Entity
@@ -14,7 +15,7 @@ public class Reservation extends PanacheEntity {
   public LocalDate endDay;
   public String userId;
 
-  public static List<Reservation> findByCar(Long carId) {
+  public static Uni<List<Reservation>> findByCar(Long carId) {
     return list("carId", carId);
   }
 
