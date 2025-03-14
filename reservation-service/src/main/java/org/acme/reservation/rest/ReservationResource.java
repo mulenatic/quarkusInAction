@@ -17,6 +17,7 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.resteasy.reactive.RestPath;
 import org.jboss.resteasy.reactive.RestQuery;
 
+import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import io.quarkus.hibernate.reactive.panache.common.WithTransaction;
 import io.quarkus.logging.Log;
 import io.smallrye.graphql.client.GraphQLClient;
@@ -50,26 +51,30 @@ public class ReservationResource {
 
   @GET
   @Path("availability")
-  public Collection<Car> availability(@RestQuery LocalDate startDate, @RestQuery LocalDate endDate) {
+  public Uni<Collection<Car>> availability(@RestQuery LocalDate startDate, @RestQuery LocalDate endDate) {
 
     // obtain all cars from inventory
-    List<Car> availableCars = inventoryClient.allCars();
-    // create a map from id to car
-    Map<Long, Car> carsById = new HashMap<>();
-    for (Car car : availableCars) {
-      carsById.put(car.id, car);
-    }
+    Uni<List<Car>> availableCarsUni = inventoryClient.allCars();
+    // get all current reservations
+    Uni<List<Reservation>> reservationsUni = Reservation.listAll();
 
     // get all current reservations
-    List<Reservation> reservations = Reservation.listAll();
-    // for each reservation, remove the car from the map
-    for (Reservation reservation : reservations) {
-      if (reservation.isReserved(startDate, endDate)) {
-        carsById.remove(reservation.carId);
-      }
-    }
+    return Uni.combine().all().unis(availableCarsUni, reservationsUni)
+        .with((availableCars, reservations) -> {
+          // create a map from id to car
+          Map<Long, Car> carsById = new HashMap<>();
+          for (Car car : availableCars) {
+            carsById.put(car.id, car);
+          }
 
-    return carsById.values();
+          // for each reservation, remove the car from the map
+          for (Reservation reservation : reservations) {
+            if (reservation.isReserved(startDate, endDate)) {
+              carsById.remove(reservation.carId);
+            }
+          }
+          return carsById.values();
+        });
 
   }
 
@@ -106,17 +111,14 @@ public class ReservationResource {
 
   @GET
   @Path("all")
-  public Uni<Collection<Reservation>> allReservations() {
+  public Uni<List<Reservation>> allReservations() {
     String userId = securityContext.getUserPrincipal() != null ? securityContext.getUserPrincipal().getName()
         : null;
 
-    return null;
-    /*
-     * return Reservation.<Reservation>listAll()
-     * .filter(reservation -> userId == null || reservation.userId.equals(userId))
-     * .collect(Collectors.toList());
-     */
-
+    return Reservation.<Reservation>listAll()
+        .onItem().transform(reservations -> reservations.stream()
+            .filter(reservation -> userId == null || reservation.userId.equals(userId))
+            .collect(Collectors.toList()));
   }
 
 }
