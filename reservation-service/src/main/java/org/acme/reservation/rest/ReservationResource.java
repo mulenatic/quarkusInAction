@@ -24,6 +24,7 @@ import io.quarkus.hibernate.reactive.panache.common.WithTransaction;
 import io.quarkus.logging.Log;
 import io.smallrye.graphql.client.GraphQLClient;
 import io.smallrye.mutiny.Uni;
+import io.smallrye.reactive.messaging.MutinyEmitter;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -45,7 +46,7 @@ public class ReservationResource {
 
   @Inject
   @Channel("invoices")
-  Emitter<Invoice> invoiceEmitter;
+  MutinyEmitter<Invoice> invoiceEmitter;
 
   @Inject
   SecurityContext securityContext;
@@ -97,13 +98,17 @@ public class ReservationResource {
         .call(persistedRerservation -> {
           Log.info("Successfully reserved reservation " + persistedRerservation);
 
-          invoiceEmitter.send(new Invoice(reservation, computePrice(reservation)));
+          Uni<Void> invoiceUni = invoiceEmitter
+              .send(new Invoice(reservation, computePrice(reservation)))
+              .onFailure().invoke(throwable -> Log.errorf("Couldn't create invoice for %s. %s%n", persistedRerservation,
+                  throwable.getMessage()));
 
           if (persistedRerservation.startDay.equals(LocalDate.now())) {
-            rentalClient
-                .start(persistedRerservation.userId, persistedRerservation.id)
-                .onItem().invoke(rental -> Log.info("Successfully started rental " + rental))
-                .replaceWith(persistedRerservation);
+            return invoiceUni
+                .chain(() -> rentalClient
+                    .start(persistedRerservation.userId, persistedRerservation.id)
+                    .onItem().invoke(rental -> Log.info("Successfully started rental " + rental))
+                    .replaceWith(persistedRerservation));
           }
 
           return Uni.createFrom().item(persistedRerservation);
