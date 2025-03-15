@@ -1,30 +1,30 @@
 package org.acme.reservation.rest;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.acme.reservation.billing.Invoice;
 import org.acme.reservation.entity.Reservation;
 import org.acme.reservation.inventory.Car;
 import org.acme.reservation.inventory.GraphQLInventoryClient;
 import org.acme.reservation.inventory.InventoryClient;
-import org.acme.reservation.rental.Rental;
 import org.acme.reservation.rental.RentalClient;
+import org.eclipse.microprofile.reactive.messaging.Channel;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
-import org.jboss.resteasy.reactive.ResponseStatus;
 import org.jboss.resteasy.reactive.RestPath;
 import org.jboss.resteasy.reactive.RestQuery;
 
-import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import io.quarkus.hibernate.reactive.panache.common.WithTransaction;
 import io.quarkus.logging.Log;
 import io.smallrye.graphql.client.GraphQLClient;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -38,8 +38,14 @@ import jakarta.ws.rs.core.SecurityContext;
 @Produces(MediaType.APPLICATION_JSON)
 public class ReservationResource {
 
+  public static final double STANDARD_RATE_PER_DAY = 19.99;
+
   private final InventoryClient inventoryClient;
   private final RentalClient rentalClient;
+
+  @Inject
+  @Channel("invoices")
+  Emitter<Invoice> invoiceEmitter;
 
   @Inject
   SecurityContext securityContext;
@@ -91,6 +97,8 @@ public class ReservationResource {
         .call(persistedRerservation -> {
           Log.info("Successfully reserved reservation " + persistedRerservation);
 
+          invoiceEmitter.send(new Invoice(reservation, computePrice(reservation)));
+
           if (persistedRerservation.startDay.equals(LocalDate.now())) {
             rentalClient
                 .start(persistedRerservation.userId, persistedRerservation.id)
@@ -103,12 +111,16 @@ public class ReservationResource {
 
   }
 
+  private double computePrice(Reservation reservation) {
+    return (ChronoUnit.DAYS.between(reservation.startDay, reservation.endDay) + 1) * STANDARD_RATE_PER_DAY;
+  }
+
   @Path("{reservationId}")
   @DELETE
   @WithTransaction
   public Uni<Void> cancel(@RestPath Long reservationId) {
-     Reservation.deleteById(reservationId);
-     return Uni.createFrom().voidItem();
+    Reservation.deleteById(reservationId);
+    return Uni.createFrom().voidItem();
   }
 
   @GET
