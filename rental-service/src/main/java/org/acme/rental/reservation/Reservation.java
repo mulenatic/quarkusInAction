@@ -9,13 +9,6 @@ public class Reservation {
     public LocalDate endDay;
     public String userId;
 
-    public Reservation(Long carId, LocalDate startDay, LocalDate endDay, String userId) {
-        this.carId = carId;
-        this.startDay = startDay;
-        this.endDay = endDay;
-        this.userId = userId;
-    }
-
     @Override
     public String toString() {
         return "Reservation [carId=" + carId + ", startDay=" + startDay + ", endDay=" + endDay + ", userId=" + userId
