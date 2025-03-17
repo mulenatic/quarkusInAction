@@ -110,7 +110,7 @@ public class ReservationResource {
                     .replaceWith(persistedRerservation));
           }
 
-          return Uni.createFrom().item(persistedRerservation);
+          return invoiceUni.replaceWith(persistedRerservation);
         });
 
   }
