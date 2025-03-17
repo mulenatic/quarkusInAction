@@ -17,6 +17,13 @@ public class Invoice extends PanacheMongoEntity {
         public Long carId;
         public LocalDate startDay;
         public LocalDate enddDay;
+        public String userId;
+    }
+
+    public Invoice(double totalPrice, boolean paid, Reservation reservation) {
+        this.totalPrice = totalPrice;
+        this.paid = paid;
+        this.reservation = reservation;
     }
 
 }
