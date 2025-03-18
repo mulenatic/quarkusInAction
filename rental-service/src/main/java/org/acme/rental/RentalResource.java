@@ -44,13 +44,28 @@ public class RentalResource {
   public Rental start(String userId, Long reservationId) {
     Log.infof("Starting rental for %s with reservation %s", userId, reservationId);
 
-    Rental rental = new Rental();
-    rental.userId = userId;
-    rental.reservationId = reservationId;
-    rental.startDate = LocalDate.now();
-    rental.active = true;
+    Optional<Rental> rentalOptional = Rental.findByUserAndReservationIdsOptional(userId, reservationId);
 
-    rental.persist();
+    Rental rental;
+    if (rentalOptional.isPresent()) {
+
+      // received confirmed invoice before
+      rental = rentalOptional.get();
+      rental.active = true;
+      rental.update();
+
+    } else {
+
+      // rental starting right now before payment
+      rental = new Rental();
+      rental.userId = userId;
+      rental.reservationId = reservationId;
+      rental.startDate = LocalDate.now();
+      rental.active = true;
+      rental.persist();
+
+    }
+
     return rental;
   }
 
@@ -62,6 +77,11 @@ public class RentalResource {
     Rental rental = Rental
         .findByUserAndReservationIdsOptional(userId, reservationId)
         .orElseThrow(() -> new NotFoundException("Rental not found"));
+
+    if (!rental.paid) {
+      Log.warn("Rental is not paid: " + rental);
+      // trigger error processing
+    }
 
     Reservation reservation = reservationClient.getById(reservationId);
 

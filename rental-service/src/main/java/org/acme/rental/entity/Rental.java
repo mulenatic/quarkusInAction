@@ -18,11 +18,12 @@ public class Rental extends PanacheMongoEntity {
   public LocalDate endDate;
   @BsonProperty("rental-active")
   public boolean active;
+  public boolean paid;
 
   @Override
   public String toString() {
     return "Rental [userId=" + userId + ", reservationId=" + reservationId + ", startDate=" + startDate + ", endDate="
-        + endDate + ", active=" + active + "]";
+        + endDate + ", active=" + active + ", paid=" + paid + "]";
   }
 
   public static Optional<Rental> findByUserAndReservationIdsOptional(String userId, Long reservationId) {
