@@ -20,6 +20,7 @@ public class InvoiceProcessor {
                 .getPayload().mapTo(ReservationInvoice.class);
         Invoice.Reservation reservation = invoiceMessage.reservation;
         Invoice invoice = new Invoice(invoiceMessage.price, false, reservation);
+        Log.infof("Invoice to be persisted: %s", invoice);
 
         invoice.persist();
         Log.info("Processing invoice: " + invoice);

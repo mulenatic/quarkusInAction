@@ -21,6 +21,7 @@ public class Invoice extends PanacheMongoEntity {
     }
 
     public Invoice(double totalPrice, boolean paid, Reservation reservation) {
+        this.id = null;
         this.totalPrice = totalPrice;
         this.paid = paid;
         this.reservation = reservation;
