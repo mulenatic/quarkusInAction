@@ -23,7 +23,7 @@ public class PaymentRequester {
         payment(invoice.reservation.userId, invoice.totalPrice, invoice);
 
         invoice.paid = true;
-        invoice.persist();
+        invoice.update();
 
         return new InvoiceConfirmation(invoice, true);
 
