@@ -4,6 +4,8 @@ import java.util.Random;
 
 import org.acme.billing.data.InvoiceConfirmation;
 import org.acme.billing.model.Invoice;
+import org.acme.billing.model.InvoiceAdjust;
+import org.eclipse.microprofile.reactive.messaging.Acknowledgment;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Outgoing;
 
@@ -45,5 +47,18 @@ public class PaymentRequester {
       public void consume(InvoiceConfirmation invoiceConfirmation) {
       System.out.println(invoiceConfirmation);
       } */
+
+      @Incoming("invoices-adjust")
+      @Blocking
+      @Acknowledgment(Acknowledgment.Strategy.PRE_PROCESSING)
+      public void requestAdjustment(InvoiceAdjust invoiceAdjust) {
+        Log.info("Received invoice adjustment: " + invoiceAdjust);
+
+        payment(invoiceAdjust.userId, invoiceAdjust.price, invoiceAdjust);
+        invoiceAdjust.paid = true;
+        invoiceAdjust.persist();
+        Log.infof("Invoice adjustment %s is paid.", invoiceAdjust);
+
+      }
 
 }
