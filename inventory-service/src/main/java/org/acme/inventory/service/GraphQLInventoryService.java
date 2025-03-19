@@ -9,6 +9,7 @@ import org.eclipse.microprofile.graphql.GraphQLApi;
 import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.Query;
 
+import io.micrometer.core.annotation.Counted;
 import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -26,6 +27,9 @@ public class GraphQLInventoryService {
 
   @Transactional
   @Mutation
+  @Counted(
+    description = "Number of car registrations"
+  )
   public Car register(Car car) {
     carRepository.persist(car);
     Log.info("Persisting " + car);
