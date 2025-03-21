@@ -1,11 +1,10 @@
 package org.acme.inventory.health;
 
+import io.smallrye.health.api.Wellness;
+import jakarta.inject.Inject;
 import org.acme.inventory.repository.CarRepository;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
-
-import io.smallrye.health.api.Wellness;
-import jakarta.inject.Inject;
 
 @Wellness
 public class CarCountCheck implements HealthCheck {
@@ -15,13 +14,12 @@ public class CarCountCheck implements HealthCheck {
 
     @Override
     public HealthCheckResponse call() {
-        long carsCount = carRepository.count();
+        long carsCount = carRepository.findAll().count();
         boolean wellnessStatus = carsCount > 0;
         return HealthCheckResponse.builder()
-                .name("car-count-check")
-                .status(wellnessStatus)
-                .withData("cars-count", carsCount)
-                .build();
+            .name("car-count-check")
+            .status(wellnessStatus)
+            .withData("cars-count", carsCount)
+            .build();
     }
-
 }

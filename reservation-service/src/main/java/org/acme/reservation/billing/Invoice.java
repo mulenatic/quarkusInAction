@@ -14,7 +14,9 @@ public class Invoice {
 
     @Override
     public String toString() {
-        return "Invoice [reservation=" + reservation + ", price=" + price + "]";
+        return "Invoice{" +
+            "reservation=" + reservation +
+            ", price=" + price +
+            '}';
     }
-
 }

@@ -12,19 +12,17 @@ import jakarta.ws.rs.core.SecurityContext;
 @Path("/whoami")
 public class WhoAmIResource {
 
-  @Inject
-  Template whoami;
+    @Inject
+    Template whoami;
 
-  @Inject
-  SecurityContext securityContext;
+    @Inject
+    SecurityContext securityContext;
 
-  @GET
-  @Produces(MediaType.TEXT_HTML)
-  public TemplateInstance get() {
-    String userId = securityContext.getUserPrincipal() != null ? 
-    securityContext.getUserPrincipal().getName() : null;
-    return whoami.data("name", userId);
-
-  }
-
+    @GET
+    @Produces(MediaType.TEXT_HTML)
+    public TemplateInstance get() {
+        String userId = securityContext.getUserPrincipal() != null
+            ? securityContext.getUserPrincipal().getName() : null;
+        return whoami.data("name", userId);
+    }
 }

@@ -9,7 +9,8 @@ public class InvoiceAdjust {
     public LocalDate actualEndDate;
     public double price;
 
-    public InvoiceAdjust(String rentalId, String userId, LocalDate actualEndDate, double price) {
+    public InvoiceAdjust(String rentalId, String userId,
+                         LocalDate actualEndDate, double price) {
         this.rentalId = rentalId;
         this.userId = userId;
         this.actualEndDate = actualEndDate;
@@ -18,8 +19,11 @@ public class InvoiceAdjust {
 
     @Override
     public String toString() {
-        return "InvoiceAdjust [rentalId=" + rentalId + ", userId=" + userId + ", actualEndDate=" + actualEndDate
-                + ", price=" + price + "]";
+        return "InvoiceAdjust{" +
+            "rentalId='" + rentalId + '\'' +
+            ", userId='" + userId + '\'' +
+            ", actualEndDate=" + actualEndDate +
+            ", price=" + price +
+            '}';
     }
-
 }

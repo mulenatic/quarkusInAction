@@ -1,29 +1,14 @@
 package org.acme.billing.model;
 
-import java.time.LocalDate;
-
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
+
+import java.time.LocalDate;
 
 public class Invoice extends PanacheMongoEntity {
 
     public double totalPrice;
     public boolean paid;
     public Reservation reservation;
-
-    public static final class Reservation {
-        public Long id;
-        public Long carId;
-        public LocalDate startDay;
-        public LocalDate enddDay;
-
-        @Override
-        public String toString() {
-            return "Reservation [id=" + id + ", carId=" + carId + ", startDay=" + startDay + ", enddDay=" + enddDay
-                    + ", userId=" + userId + "]";
-        }
-
-        public String userId;
-    }
 
     public Invoice(double totalPrice, boolean paid, Reservation reservation) {
         this.totalPrice = totalPrice;
@@ -33,7 +18,30 @@ public class Invoice extends PanacheMongoEntity {
 
     @Override
     public String toString() {
-        return "Invoice [totalPrice=" + totalPrice + ", paid=" + paid + ", reservation=" + reservation + "]";
+        return "Invoice{" +
+            "totalPrice=" + totalPrice +
+            ", paid=" + paid +
+            ", reservation=" + reservation +
+            ", id=" + id +
+            '}';
     }
 
+    public static final class Reservation {
+        public Long id;
+        public String userId;
+        public Long carId;
+        public LocalDate startDay;
+        public LocalDate endDay;
+
+        @Override
+        public String toString() {
+            return "Reservation{" +
+                "id=" + id +
+                ", userId='" + userId + '\'' +
+                ", carId=" + carId +
+                ", startDay=" + startDay +
+                ", endDay=" + endDay +
+                '}';
+        }
+    }
 }

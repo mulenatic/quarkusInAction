@@ -9,7 +9,7 @@ If you want to learn more about Quarkus, please visit its website: <https://quar
 You can run your application in dev mode that enables live coding using:
 
 ```shell script
-./mvnw quarkus:dev
+./mvnw compile quarkus:dev
 ```
 
 > **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
@@ -56,5 +56,6 @@ If you want to learn more about building native executables, please consult <htt
 ## Related Guides
 
 - Qute ([guide](https://quarkus.io/guides/qute)): Offer templating support for web, email, etc in a build time, type-safe way
+- REST Qute ([guide](https://quarkus.io/guides/qute-reference#rest_integration)): Qute integration for Quarkus REST. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
 - REST Client - OpenID Connect Token Propagation ([guide](https://quarkus.io/guides/security-openid-connect-client)): Use REST Client to propagate the incoming Bearer access token or token acquired from Authorization Code Flow as HTTP Authorization Bearer token
 - OpenID Connect ([guide](https://quarkus.io/guides/security-openid-connect)): Verify Bearer access tokens and authenticate users with Authorization Code Flow

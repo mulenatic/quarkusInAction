@@ -14,7 +14,9 @@ public class InvoiceConfirmation {
 
     @Override
     public String toString() {
-        return "InvoiceConfirmation [invoice=" + invoice + ", paid=" + paid + "]";
+        return "InvoiceConfirmation{" +
+            "invoice=" + invoice +
+            ", paid=" + paid +
+            '}';
     }
-
 }

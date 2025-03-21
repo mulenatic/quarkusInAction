@@ -4,15 +4,7 @@ import java.time.LocalDate;
 
 public class Reservation {
 
-    public Long carId;
-    public LocalDate startDay;
+    // We are interested only in the endDay, other fields are omitted
+
     public LocalDate endDay;
-    public String userId;
-
-    @Override
-    public String toString() {
-        return "Reservation [carId=" + carId + ", startDay=" + startDay + ", endDay=" + endDay + ", userId=" + userId
-                + "]";
-    }
-
 }
