@@ -7,7 +7,7 @@ import io.smallrye.mutiny.Uni;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 
-@RegisterRestClient(baseUri = "http://localhost:8082")
+@RegisterRestClient(configKey = "rental")
 @Path("/rental")
 public interface RentalClient {
   

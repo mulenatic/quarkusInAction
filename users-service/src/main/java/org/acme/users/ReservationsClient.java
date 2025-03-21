@@ -15,7 +15,7 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 
-@RegisterRestClient(baseUri = "http://localhost:8081")
+@RegisterRestClient(configKey = "reservations")
 @AccessToken
 @Path("reservation")
 public interface ReservationsClient {
