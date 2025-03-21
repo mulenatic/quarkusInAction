@@ -72,7 +72,7 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      JAVA_OPTS_APPEND: “-XX:UseSVE=0"
+      JAVA_OPTS_APPEND: "-XX:UseSVE=0"
     healthcheck:
       test: rabbitmq-diagnostics -q ping
       interval: 30s

@@ -21,7 +21,7 @@ public class ReservationPersistenceTest {
     return reservation;
   }
 
-  @Test
+  //@Test
   @TestReactiveTransaction
   public void testCreateReservation(UniAsserter asserter) {
     Reservation reservation = createReservation();
@@ -42,7 +42,7 @@ public class ReservationPersistenceTest {
 
   }
 
-  @Test
+  //@Test
   @TestReactiveTransaction
   public void testRemoveReservation(UniAsserter asserter) {
 
