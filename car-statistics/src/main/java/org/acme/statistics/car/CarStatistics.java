@@ -18,9 +18,9 @@ public class CarStatistics {
     @Funq
     public Uni<String> getCarStatistics() {
         return inventoryClient.allCars()
-        .map(cars -> ("The Car Rental car statistics created at %s" +
-        "Number of available cars: %d")
-        .formatted(Instant.now(), cars.size()));
+                .map(cars -> ("The Car Rental car statistics created at %s" +
+                        "Number of available cars: %d")
+                        .formatted(Instant.now(), cars.size()));
     }
 
 }
